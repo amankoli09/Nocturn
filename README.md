@@ -37,6 +37,8 @@ Each party submits a private limit as a witness to a Compact contract:
 - if they do, it discloses one deal price and marks the negotiation as `Matched`
 - if they do not, it marks the negotiation as `Failed` and reveals nothing about the gap
 
+For this Level 1 build, the seller's minimum becomes the public deal price when a match exists.
+
 The contract only reveals the outcome, never the inputs that produced it.
 
 ## How It Works
@@ -122,11 +124,19 @@ flowchart LR
 
 This repository is organized for a Compact and Midnight workflow:
 
-1. Put the contract in `contract/negotiation.compact`.
-2. Compile it with `scripts/compile.sh`.
-3. Add tests in `test/negotiation.test.ts`.
-4. Configure providers in `src/providers.ts`.
-5. Deploy with `scripts/deploy.ts`.
+1. Install Node 22, Docker, and the Compact CLI.
+2. Put the contract in `contract/negotiation.compact`.
+3. Compile it with `scripts/compile.sh`.
+4. Add tests in `test/negotiation.test.ts`.
+5. Configure providers in `src/providers.ts`.
+6. Deploy with `scripts/deploy.ts`.
+
+### Local Commands
+
+- `npm install`
+- `npm test`
+- `npm run typecheck`
+- `bash scripts/compile.sh`
 
 ## Vision
 
