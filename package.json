@@ -1,0 +1,19 @@
+{
+  "name": "nocturn",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "bash scripts/compile.sh",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "tsx scripts/deploy.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
