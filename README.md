@@ -1,4 +1,4 @@
-# Umbra
+# Nocturn
 
 > Confidential price negotiation on Midnight.
 
@@ -7,20 +7,20 @@
 [![Zero Knowledge](https://img.shields.io/badge/Privacy-ZK%20Proofs-7c3aed?style=for-the-badge)](https://midnight.network/)
 [![Level 1](https://img.shields.io/badge/Hackathon-Level%201-f59e0b?style=for-the-badge)](https://midnight.network/)
 
-Umbra is a private negotiation protocol for prices that should stay hidden until a deal actually exists.
+Nocturn is a private negotiation protocol for prices that should stay hidden until a deal actually exists.
 It lets two parties prove whether a buyer's maximum and a seller's minimum overlap without revealing either limit to the chain, the platform, or the other party.
 
 This is not an escrow app with a privacy layer.
 It is a selective-disclosure contract for information asymmetry itself.
 
-## Why Umbra Exists
+## Why Nocturn Exists
 
 Negotiation breaks the moment one side is forced to reveal their real number.
 If the buyer shows their ceiling, the seller anchors higher.
 If the seller shows their floor, the buyer pressures lower.
 Traditional on-chain tools cannot solve that because public ledgers make private limits visible by default.
 
-Umbra uses Midnight's selective disclosure model so the contract can decide exactly what becomes public:
+Nocturn uses Midnight's selective disclosure model so the contract can decide exactly what becomes public:
 
 - the negotiation exists
 - its status is public
@@ -61,7 +61,7 @@ The contract only reveals the outcome, never the inputs that produced it.
 
 ## Why Midnight Fits
 
-Umbra is a strong fit for Midnight because the protocol needs three things at once:
+Nocturn is a strong fit for Midnight because the protocol needs three things at once:
 
 - private witness inputs for both negotiation limits
 - public ledger state for status tracking and settlement
@@ -130,7 +130,7 @@ This repository is organized for a Compact and Midnight workflow:
 
 ## Vision
 
-Umbra generalizes beyond price negotiation.
+Nocturn generalizes beyond price negotiation.
 The same private-input, disclosed-only-if-matched pattern can be reused for:
 
 - freelance rate negotiation
