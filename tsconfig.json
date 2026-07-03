@@ -5,10 +5,14 @@
     "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "types": ["node", "vitest/globals"]
+    "outDir": "dist",
+    "rootDir": ".",
+    "composite": true
   },
-  "include": ["src", "test", "scripts"]
+  "references": [
+    { "path": "./api" },
+    { "path": "./ui" }
+  ],
+  "include": ["src/**/*", "scripts/**/*", "test/**/*"]
 }

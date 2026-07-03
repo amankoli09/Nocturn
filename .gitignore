@@ -6,3 +6,19 @@ node_modules/
 coverage/
 dist/
 *.log
+
+# Proof server volumes
+proof-server-data/
+
+# UI build output
+ui/dist/
+
+# API build output
+api/dist/
+
+# Wallet seed — NEVER commit this
+*.seed
+WALLET_SEED
+
+# Docs — preprod address is committed, not the deploy log
+docs/deploy.log
