@@ -1,0 +1,27 @@
+{
+  "name": "@nocturn/ui",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nocturn/api": "*",
+    "@midnight-ntwrk/dapp-connector-api": "*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rxjs": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "*",
+    "vite": "^5.4.19",
+    "vite-plugin-node-polyfills": "^0.22.0"
+  }
+}

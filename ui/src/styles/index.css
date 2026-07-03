@@ -1,0 +1,891 @@
+/* =============================================================================
+   Nocturn Design System — index.css
+   Dark, glassmorphism aesthetic inspired by moonlight through shadow.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------
+   0. CSS Reset & Fonts
+   ----------------------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, .mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* -----------------------------------------------------------------------
+   1. Design Tokens
+   ----------------------------------------------------------------------- */
+
+:root {
+  /* Backgrounds */
+  --bg-base:          #080a11;
+  --bg-surface:       #0e1120;
+  --bg-card:          rgba(255, 255, 255, 0.03);
+  --bg-card-hover:    rgba(255, 255, 255, 0.06);
+  --bg-input:         rgba(255, 255, 255, 0.06);
+  --bg-input-focus:   rgba(255, 255, 255, 0.09);
+
+  /* Borders */
+  --border-subtle:    rgba(255, 255, 255, 0.08);
+  --border-glow:      rgba(124, 58, 237, 0.35);
+  --border-focus:     rgba(124, 58, 237, 0.7);
+
+  /* Text */
+  --text-primary:     #f0f0f8;
+  --text-secondary:   #8891a8;
+  --text-muted:       #4a5568;
+  --text-accent:      #a78bfa;
+  --text-code:        #c4b5fd;
+
+  /* Brand palette — violet → indigo → cyan */
+  --violet-400:       #a78bfa;
+  --violet-500:       #8b5cf6;
+  --violet-600:       #7c3aed;
+  --indigo-500:       #6366f1;
+  --cyan-400:         #22d3ee;
+  --cyan-500:         #06b6d4;
+
+  /* Status colours */
+  --status-pending:   #f59e0b;
+  --status-matched:   #10b981;
+  --status-failed:    #ef4444;
+
+  /* Gradients */
+  --gradient-brand:   linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #22d3ee 100%);
+  --gradient-surface: linear-gradient(180deg, #0e1120 0%, #080a11 100%);
+  --gradient-card:    linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(99,102,241,0.04) 100%);
+  --gradient-glow:    radial-gradient(ellipse at top, rgba(124, 58, 237, 0.15) 0%, transparent 60%);
+
+  /* Shadows */
+  --shadow-card:      0 4px 24px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-glow:      0 0 40px rgba(124, 58, 237, 0.2);
+  --shadow-button:    0 4px 20px rgba(124, 58, 237, 0.4);
+
+  /* Radii */
+  --radius-sm:        6px;
+  --radius-md:        12px;
+  --radius-lg:        20px;
+  --radius-xl:        28px;
+  --radius-full:      9999px;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+  --space-2xl: 64px;
+
+  /* Transitions */
+  --transition-fast:   0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* -----------------------------------------------------------------------
+   2. Background — ambient glow orbs
+   ----------------------------------------------------------------------- */
+
+.app-root {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: var(--bg-base);
+  overflow: hidden;
+}
+
+.app-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 800px 600px at 20% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 500px at 80% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 400px at 60% 30%, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-root > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* -----------------------------------------------------------------------
+   3. Glass Card
+   ----------------------------------------------------------------------- */
+
+.glass-card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.glass-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-card), var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* -----------------------------------------------------------------------
+   4. Typography
+   ----------------------------------------------------------------------- */
+
+.text-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.code-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-code);
+  background: rgba(167, 139, 250, 0.08);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  word-break: break-all;
+}
+
+/* -----------------------------------------------------------------------
+   5. Buttons
+   ----------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary — violet gradient */
+.btn-primary {
+  background: var(--gradient-brand);
+  color: #fff;
+  padding: 12px 28px;
+  box-shadow: var(--shadow-button);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  border-radius: inherit;
+}
+
+.btn-primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.55);
+}
+
+.btn-primary:not(:disabled):hover::before {
+  opacity: 1;
+}
+
+.btn-primary:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-button);
+}
+
+/* Secondary — ghost */
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-ghost:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+  border-color: var(--border-glow);
+  transform: translateY(-1px);
+}
+
+/* Danger — for disconnect */
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.btn-danger:not(:disabled):hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* -----------------------------------------------------------------------
+   6. Form Inputs
+   ----------------------------------------------------------------------- */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:focus {
+  border-color: var(--border-focus);
+  background: var(--bg-input-focus);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+/* -----------------------------------------------------------------------
+   7. Status Badges
+   ----------------------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--status-pending);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-pending .badge-dot {
+  background: var(--status-pending);
+  animation: pulse-amber 2s infinite;
+}
+
+.badge-matched {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--status-matched);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-matched .badge-dot {
+  background: var(--status-matched);
+}
+
+.badge-failed {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--status-failed);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-failed .badge-dot {
+  background: var(--status-failed);
+}
+
+/* -----------------------------------------------------------------------
+   8. ZK Proof Spinner (pulsing ring)
+   ----------------------------------------------------------------------- */
+
+.zk-spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0;
+}
+
+.zk-spinner {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.zk-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  animation: spin 1.2s linear infinite;
+}
+
+.zk-spinner-ring:nth-child(1) {
+  border-top-color: var(--violet-500);
+  animation-duration: 1.2s;
+}
+
+.zk-spinner-ring:nth-child(2) {
+  inset: 8px;
+  border-top-color: var(--indigo-500);
+  animation-duration: 1.8s;
+  animation-direction: reverse;
+}
+
+.zk-spinner-ring:nth-child(3) {
+  inset: 16px;
+  border-top-color: var(--cyan-400);
+  animation-duration: 0.9s;
+}
+
+.zk-spinner-core {
+  position: absolute;
+  inset: 22px;
+  background: var(--gradient-brand);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: pulse-core 1.5s ease-in-out infinite;
+}
+
+.zk-spinner-label {
+  font-size: 0.82rem;
+  color: var(--text-accent);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-align: center;
+  animation: fade-pulse 2s ease-in-out infinite;
+}
+
+/* -----------------------------------------------------------------------
+   9. Connect Wallet Screen
+   ----------------------------------------------------------------------- */
+
+.connect-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-xl);
+  padding: var(--space-2xl) var(--space-xl);
+  max-width: 520px;
+  width: 100%;
+}
+
+.connect-screen__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.crescent-icon {
+  font-size: 80px;
+  line-height: 1;
+  animation: float 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 24px rgba(124, 58, 237, 0.4));
+}
+
+.connect-screen__title {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.connect-screen__tagline {
+  max-width: 360px;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.connect-screen__features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  text-align: left;
+}
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+}
+
+.feature-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.connect-screen__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.connect-wallet-btn {
+  width: 100%;
+  padding: 16px 28px;
+  font-size: 1rem;
+}
+
+.connect-screen__hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.error-banner {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  color: #fca5a5;
+  text-align: center;
+}
+
+/* -----------------------------------------------------------------------
+   10. Negotiation Panel
+   ----------------------------------------------------------------------- */
+
+.negotiation-panel {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.wallet-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--status-matched);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  animation: pulse-green 2s infinite;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-sm);
+}
+
+/* Contract address section */
+.contract-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.contract-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.contract-actions .btn {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-md);
+}
+
+.address-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px var(--space-md);
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.address-display__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--status-matched);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+/* Open Negotiation section */
+.open-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Match Offer section */
+.match-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.match-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.privacy-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(124, 58, 237, 0.06);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.privacy-hint__icon {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+/* -----------------------------------------------------------------------
+   11. Privacy Receipt
+   ----------------------------------------------------------------------- */
+
+.privacy-receipt {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.receipt-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+}
+
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-key {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.receipt-val-public {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.receipt-val-private {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.receipt-val-hidden {
+  color: var(--violet-400);
+  font-weight: 500;
+}
+
+.receipt-proof-line {
+  padding: var(--space-md);
+  background: rgba(124, 58, 237, 0.06);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--text-accent);
+  line-height: 1.6;
+}
+
+.price-reveal {
+  padding: var(--space-lg);
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.price-reveal__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--status-matched);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.price-reveal__value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--status-matched);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+}
+
+.failed-notice {
+  padding: var(--space-lg);
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  font-size: 0.87rem;
+  color: #fca5a5;
+  line-height: 1.6;
+}
+
+/* -----------------------------------------------------------------------
+   12. Keyframe Animations
+   ----------------------------------------------------------------------- */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(-5deg); }
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+
+@keyframes fade-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes pulse-core {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+}
+
+@keyframes pulse-amber {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+  50% { opacity: 0.7; box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* -----------------------------------------------------------------------
+   13. Animation Utility Classes
+   ----------------------------------------------------------------------- */
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease both;
+}
+
+/* Stagger children */
+.animate-slide-up:nth-child(1) { animation-delay: 0ms; }
+.animate-slide-up:nth-child(2) { animation-delay: 60ms; }
+.animate-slide-up:nth-child(3) { animation-delay: 120ms; }
+.animate-slide-up:nth-child(4) { animation-delay: 180ms; }
+.animate-slide-up:nth-child(5) { animation-delay: 240ms; }
+
+/* -----------------------------------------------------------------------
+   14. Utility
+   ----------------------------------------------------------------------- */
+
+.w-full   { width: 100%; }
+.flex     { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm   { gap: var(--space-sm); }
+.gap-md   { gap: var(--space-md); }
+.gap-lg   { gap: var(--space-lg); }
+.text-center { text-align: center; }
+
+/* -----------------------------------------------------------------------
+   15. Responsive
+   ----------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .connect-screen {
+    padding: var(--space-xl) var(--space-lg);
+  }
+  .connect-screen__title {
+    font-size: 2.2rem;
+  }
+  .negotiation-panel {
+    padding: var(--space-lg);
+  }
+  .match-inputs {
+    grid-template-columns: 1fr;
+  }
+  .crescent-icon {
+    font-size: 60px;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   16. Scrollbar
+   ----------------------------------------------------------------------- */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-glow);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--violet-500);
+}
