@@ -1,7 +1,9 @@
 /* =============================================================================
    Nocturn Design System — index.css
-   Dark, glassmorphism aesthetic inspired by moonlight through shadow.
+   Modern, glassmorphism aesthetic inspired by light and shadow.
    ============================================================================= */
+
+@import url('./layout.css');
 
 /* -----------------------------------------------------------------------
    0. CSS Reset & Fonts
@@ -38,26 +40,26 @@ code, pre, .mono {
 
 :root {
   /* Backgrounds */
-  --bg-base:          #080a11;
-  --bg-surface:       #0e1120;
-  --bg-card:          rgba(255, 255, 255, 0.03);
-  --bg-card-hover:    rgba(255, 255, 255, 0.06);
-  --bg-input:         rgba(255, 255, 255, 0.06);
-  --bg-input-focus:   rgba(255, 255, 255, 0.09);
+  --bg-base:          #f4f5f7;
+  --bg-surface:       #ffffff;
+  --bg-card:          rgba(255, 255, 255, 0.6);
+  --bg-card-hover:    rgba(255, 255, 255, 0.8);
+  --bg-input:         rgba(255, 255, 255, 0.8);
+  --bg-input-focus:   #ffffff;
 
   /* Borders */
-  --border-subtle:    rgba(255, 255, 255, 0.08);
-  --border-glow:      rgba(124, 58, 237, 0.35);
-  --border-focus:     rgba(124, 58, 237, 0.7);
+  --border-subtle:    rgba(0, 0, 0, 0.05);
+  --border-glow:      rgba(124, 58, 237, 0.15);
+  --border-focus:     rgba(124, 58, 237, 0.4);
 
   /* Text */
-  --text-primary:     #f0f0f8;
-  --text-secondary:   #8891a8;
-  --text-muted:       #4a5568;
-  --text-accent:      #a78bfa;
-  --text-code:        #c4b5fd;
+  --text-primary:     #0f172a;
+  --text-secondary:   #475569;
+  --text-muted:       #64748b;
+  --text-accent:      #6366f1;
+  --text-code:        #4f46e5;
 
-  /* Brand palette — violet → indigo → cyan */
+  /* Brand palette */
   --violet-400:       #a78bfa;
   --violet-500:       #8b5cf6;
   --violet-600:       #7c3aed;
@@ -71,21 +73,23 @@ code, pre, .mono {
   --status-failed:    #ef4444;
 
   /* Gradients */
-  --gradient-brand:   linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #22d3ee 100%);
-  --gradient-surface: linear-gradient(180deg, #0e1120 0%, #080a11 100%);
-  --gradient-card:    linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(99,102,241,0.04) 100%);
-  --gradient-glow:    radial-gradient(ellipse at top, rgba(124, 58, 237, 0.15) 0%, transparent 60%);
+  --gradient-brand:   linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f4f5f7 100%);
+  --gradient-card:    linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%);
+  --gradient-glow:    radial-gradient(ellipse at top, rgba(124, 58, 237, 0.05) 0%, transparent 60%);
+  --gradient-pastel:  linear-gradient(135deg, #e0f2fe 0%, #ede9fe 100%);
 
   /* Shadows */
-  --shadow-card:      0 4px 24px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-glow:      0 0 40px rgba(124, 58, 237, 0.2);
-  --shadow-button:    0 4px 20px rgba(124, 58, 237, 0.4);
+  --shadow-card:      0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.02);
+  --shadow-glow:      0 0 40px rgba(124, 58, 237, 0.05);
+  --shadow-button:    0 8px 16px rgba(148, 163, 184, 0.2);
+  --shadow-sm:        0 2px 4px rgba(0,0,0,0.05);
 
   /* Radii */
-  --radius-sm:        6px;
-  --radius-md:        12px;
-  --radius-lg:        20px;
-  --radius-xl:        28px;
+  --radius-sm:        8px;
+  --radius-md:        16px;
+  --radius-lg:        24px;
+  --radius-xl:        32px;
   --radius-full:      9999px;
 
   /* Spacing */
@@ -123,9 +127,9 @@ code, pre, .mono {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 800px 600px at 20% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 600px 500px at 80% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 400px 400px at 60% 30%, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
+    radial-gradient(circle 800px at 80% 20%, rgba(220, 230, 255, 0.8) 0%, transparent 70%),
+    radial-gradient(circle 600px at 20% 80%, rgba(240, 230, 255, 0.6) 0%, transparent 70%),
+    radial-gradient(circle 400px at 50% 50%, rgba(230, 255, 245, 0.5) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -141,17 +145,17 @@ code, pre, .mono {
 
 .glass-card {
   background: var(--gradient-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .glass-card:hover {
-  border-color: var(--border-glow);
-  box-shadow: var(--shadow-card), var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0,0,0,0.03);
 }
 
 /* -----------------------------------------------------------------------
