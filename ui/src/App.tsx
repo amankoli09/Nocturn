@@ -14,7 +14,9 @@ function AppInner() {
   if (connected || showPanel) {
     return (
       <NegotiationProvider enabledWalletApi={enabledApi}>
-        <NegotiationPanel />
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+          <NegotiationPanel />
+        </div>
       </NegotiationProvider>
     );
   }
@@ -22,41 +24,54 @@ function AppInner() {
   return <ConnectWallet onConnect={handleConnected} />;
 }
 
+function Header() {
+  const { connected, disconnect } = useWallet();
+
+  return (
+    <header className="app-header">
+      <div className="app-header-logo">
+        <strong style={{ fontSize: '1.25rem', letterSpacing: '-0.5px' }}>Nocturn.</strong>
+      </div>
+      <nav className="app-header-nav">
+        <a href="#">Home</a>
+        <a href="#">Services</a>
+        <a href="#">About Us</a>
+        <a href="#">Pricing</a>
+      </nav>
+      <div className="app-header-action">
+        {connected ? (
+          <button className="header-btn" onClick={disconnect}>Disconnect Wallet</button>
+        ) : (
+          <button className="header-btn">Book a Demo</button>
+        )}
+      </div>
+    </header>
+  );
+}
+
 export default function App() {
   return (
     <div className="app-root">
-      <WalletProvider>
-        <AppInner />
-      </WalletProvider>
+      <div className="app-container">
+        <Header />
+        
+        <main className="app-main">
+          <WalletProvider>
+            <AppInner />
+          </WalletProvider>
+        </main>
 
-      {/* Footer */}
-      <footer
-        style={{
-          position: 'fixed',
-          bottom: 16,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 20,
-          fontSize: '0.72rem',
-          color: 'var(--text-muted)',
-          pointerEvents: 'none',
-        }}
-      >
-        <span>🌒 Nocturn · Level 2</span>
-        <span>·</span>
-        <span>Midnight Preprod</span>
-        <span>·</span>
-        <a
-          href="https://github.com/amankoli09/Nocturn"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--text-muted)', textDecoration: 'none', pointerEvents: 'all' }}
-        >
-          GitHub ↗
-        </a>
-      </footer>
+        <footer className="app-footer">
+          <div className="footer-title">Trust the Experts</div>
+          <div className="footer-links">
+            <span>Midnight Preprod</span>
+            <span>Nocturn · Level 2</span>
+            <a href="https://github.com/amankoli09/Nocturn" target="_blank" rel="noopener noreferrer">
+              GitHub ↗
+            </a>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
