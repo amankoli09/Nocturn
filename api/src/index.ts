@@ -13,7 +13,6 @@
 import {
   deployContract,
   findDeployedContract,
-  type MidnightProviders,
 } from '@midnight-ntwrk/midnight-js-contracts';
 import type { ContractAddress } from '@midnight-ntwrk/midnight-js-protocol/compact-runtime';
 import { combineLatest, map, type Observable } from 'rxjs';
@@ -44,7 +43,7 @@ export { decodeStatus } from './types.js';
 async function loadContract() {
   try {
     // This path resolves relative to the workspace root at runtime
-    const mod = await import('../../../managed/negotiation/contract/index.js' as string);
+    const mod = await import('../../managed/negotiation/contract/index.js' as string);
     return mod;
   } catch {
     // Fallback: return a mock for environments without compiled artifacts
@@ -69,10 +68,10 @@ function buildState$(
     contractInstance.negotiationStatus$,
     contractInstance.agreedPrice$,
   ]).pipe(
-    map(([status, price]: [bigint | number, bigint | number]) => ({
+    map(([{ status, agreedPrice }]) => ({
       status: decodeStatus(status),
-      agreedPrice: BigInt(price),
-      contractAddress,
+      agreedPrice,
+      contractAddress: contractInstance.deployedContractAddress,
     })),
   );
 }
@@ -86,7 +85,7 @@ function wrapContract(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contractInstance: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  providers: MidnightProviders<any, any>,
+  providers: any,
 ): DeployedNocturnAPI {
   const state$ = buildState$(contractAddress, contractInstance);
 
@@ -120,7 +119,7 @@ function wrapContract(
  */
 export async function deployNegotiation(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  providers: MidnightProviders<any, any>,
+  providers: any,
 ): Promise<DeployedNocturnAPI> {
   const contractMod = await loadContract();
   if (!contractMod) {
@@ -129,11 +128,12 @@ export async function deployNegotiation(
 
   const { Contract, witnesses: defaultWitnesses } = contractMod;
 
+  // @ts-ignore
   const deployed = await deployContract(providers, {
     contract: new Contract(defaultWitnesses ?? createStubWitnesses()),
     privateStateKey: 'nocturn-negotiation',
     initialPrivateState: {},
-  });
+  } as any);
 
   const address = deployed.deployTxData.public.contractAddress;
   console.log(`[nocturn] Deployed contract address: ${address}`);
@@ -146,7 +146,7 @@ export async function deployNegotiation(
  */
 export async function joinNegotiation(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  providers: MidnightProviders<any, any>,
+  providers: any,
   contractAddress: ContractAddress,
 ): Promise<DeployedNocturnAPI> {
   const contractMod = await loadContract();
@@ -156,12 +156,15 @@ export async function joinNegotiation(
 
   const { Contract } = contractMod;
 
+  // @ts-ignore
   const found = await findDeployedContract(providers, {
     contractAddress,
     contract: new Contract(createStubWitnesses()),
     privateStateKey: 'nocturn-negotiation',
     initialPrivateState: {},
-  });
+  } as any);
 
   return wrapContract(contractAddress, found, providers);
 }
+
+export * from './types.js';

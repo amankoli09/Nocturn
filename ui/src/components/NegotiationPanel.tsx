@@ -91,13 +91,6 @@ export function NegotiationPanel() {
           <span className="code-text" title={walletAddress ?? ''}>
             {truncate(walletAddress ?? '', 8)}
           </span>
-          <button
-            id="disconnect-btn"
-            className="btn btn-danger"
-            onClick={disconnect}
-          >
-            Disconnect
-          </button>
         </div>
       </div>
 
@@ -218,7 +211,7 @@ export function NegotiationPanel() {
                 <div className="privacy-hint">
                   <span className="privacy-hint__icon">🔒</span>
                   <span>
-                    These values enter the ZK circuit as <strong>witnesses</strong> — they
+                    <strong>Proved without revealing your input:</strong> These values enter the ZK circuit as witnesses — they
                     produce a proof without being written to the ledger. Once the proof
                     is submitted, they are erased.
                   </span>
