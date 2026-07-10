@@ -110,7 +110,7 @@ export function NegotiationPanel() {
       )}
 
       {/* ── Error banner ── */}
-      {txPhase === 'error' && txError && (
+      {txError && (
         <div className="error-banner animate-fade-in">
           <strong>Transaction failed:</strong> {txError}
           <br />
