@@ -52,26 +52,26 @@ function Header() {
 export default function App() {
   return (
     <div className="app-root">
-      <div className="app-container">
-        <Header />
-        
-        <main className="app-main">
-          <WalletProvider>
+      <WalletProvider>
+        <div className="app-container">
+          <Header />
+          
+          <main className="app-main">
             <AppInner />
-          </WalletProvider>
-        </main>
+          </main>
 
-        <footer className="app-footer">
-          <div className="footer-title">Trust the Experts</div>
-          <div className="footer-links">
-            <span>Midnight Preprod</span>
-            <span>Nocturn · Level 2</span>
-            <a href="https://github.com/amankoli09/Nocturn" target="_blank" rel="noopener noreferrer">
-              GitHub ↗
-            </a>
-          </div>
-        </footer>
-      </div>
+          <footer className="app-footer">
+            <div className="footer-title">Trust the Experts</div>
+            <div className="footer-links">
+              <span>Midnight Preprod</span>
+              <span>Nocturn · Level 2</span>
+              <a href="https://github.com/amankoli09/Nocturn" target="_blank" rel="noopener noreferrer">
+                GitHub ↗
+              </a>
+            </div>
+          </footer>
+        </div>
+      </WalletProvider>
     </div>
   );
 }
