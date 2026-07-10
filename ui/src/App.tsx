@@ -6,12 +6,8 @@ import { NegotiationPanel } from './components/NegotiationPanel';
 
 function AppInner() {
   const { connected, enabledApi } = useWallet();
-  const [showPanel, setShowPanel] = useState(false);
 
-  // Once connected, show the panel
-  const handleConnected = () => setShowPanel(true);
-
-  if (connected || showPanel) {
+  if (connected) {
     return (
       <NegotiationProvider enabledWalletApi={enabledApi}>
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
@@ -21,7 +17,7 @@ function AppInner() {
     );
   }
 
-  return <ConnectWallet onConnect={handleConnected} />;
+  return <ConnectWallet onConnect={() => {}} />;
 }
 
 function Header() {

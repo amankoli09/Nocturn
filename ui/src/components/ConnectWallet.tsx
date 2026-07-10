@@ -2,7 +2,7 @@ import React from 'react';
 import { useWallet } from '../context/WalletContext';
 
 interface ConnectWalletProps {
-  onConnect: () => void;
+  onConnect?: () => void;
 }
 
 export function ConnectWallet({ onConnect }: ConnectWalletProps) {
@@ -10,7 +10,7 @@ export function ConnectWallet({ onConnect }: ConnectWalletProps) {
 
   const handleConnect = async () => {
     await connect();
-    onConnect();
+    if (onConnect) onConnect();
   };
 
   return (
