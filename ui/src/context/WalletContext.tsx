@@ -1,12 +1,14 @@
+'use client';
+
 /**
- * WalletContext — manages Lace wallet connection state.
+ * WalletContext — Lace wallet connection for Midnight Preprod.
  *
- * Uses the Midnight DApp Connector API:
- *   window.midnight.mnLace.connect('preprod')
+ * DApp Connector API v4:
+ *   window.midnight.mnLace.connect('preprod')  →  ConnectedAPI
  *
  * Privacy note: this context holds NO private negotiation data.
- * It only manages the wallet connection lifecycle and exposes the
- * providers needed by NegotiationContext to submit transactions.
+ * It only manages the wallet connection lifecycle and exposes
+ * the providers needed by NegotiationContext.
  */
 
 import React, {
@@ -19,55 +21,56 @@ import React, {
   type ReactNode,
 } from 'react';
 
-// ---------------------------------------------------------------------------
-// Types from the DApp Connector API
-// We declare the minimal shape we need; the full types come from
-// @midnight-ntwrk/dapp-connector-api but we keep this lightweight for the UI.
-// ---------------------------------------------------------------------------
+/* ── DApp Connector API v4 types ── */
 
-type NetworkId = 'preprod' | 'preview' | 'undeployed';
+export interface ServiceConfig {
+  indexerUri: string;
+  indexerWsUri: string;
+  proverServerUri: string;
+  substrateNodeUri: string;
+  networkId?: string;
+}
 
-interface MidnightWalletAPI {
-  connect: (networkId: NetworkId) => Promise<EnabledWalletAPI>;
-  isEnabled: () => Promise<boolean>;
+export interface ShieldedAddresses {
+  coinPublicKey: string;
+  encryptionPublicKey: string;
+  address: string;
+}
+
+export interface ConnectedWalletAPI {
+  getShieldedAddresses(): Promise<ShieldedAddresses>;
+  getUnshieldedAddress(): Promise<{ unshieldedAddress: string }>;
+  getConfiguration(): Promise<ServiceConfig>;
+  balanceUnsealedTransaction(tx: string, options?: { payFees?: boolean }): Promise<{ tx: string }>;
+  submitTransaction(tx: string): Promise<void>;
+  getConnectionStatus(): Promise<
+    { status: 'connected'; networkId: string } | { status: 'disconnected' }
+  >;
+}
+
+interface InitialWalletAPI {
+  connect(networkId: string): Promise<ConnectedWalletAPI>;
   apiVersion: string;
   name: string;
   icon: string;
 }
 
-interface EnabledWalletAPI {
-  state: () => Promise<WalletState>;
-  submitTx: (tx: unknown) => Promise<string>;
-  coinPublicKey: () => Promise<string>;
-  encryptionPublicKey: () => Promise<string>;
-}
-
-interface WalletState {
-  address: string;
-}
-
 declare global {
   interface Window {
-    midnight?: {
-      mnLace?: MidnightWalletAPI;
-    };
+    midnight?: Record<string, InitialWalletAPI | undefined>;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Context shape
-// ---------------------------------------------------------------------------
+/* ── Context shape ── */
 
-interface WalletContextValue {
-  /** Whether Lace wallet is connected */
+export interface WalletContextValue {
   connected: boolean;
-  /** Wallet address (unshielded), or null if not connected */
   walletAddress: string | null;
-  /** The enabled wallet API, or null if not connected */
-  enabledApi: EnabledWalletAPI | null;
-  /** Connection in progress */
+  shieldedCoinPublicKey: string | null;
+  shieldedEncryptionPublicKey: string | null;
+  connectedApi: ConnectedWalletAPI | null;
+  serviceConfig: ServiceConfig | null;
   connecting: boolean;
-  /** Last connection error message */
   error: string | null;
   connect: () => Promise<void>;
   disconnect: () => void;
@@ -75,32 +78,60 @@ interface WalletContextValue {
 
 const WalletContext = createContext<WalletContextValue | null>(null);
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
+/* ── Helper: poll for Lace injection ── */
+
+async function waitForLace(timeoutMs = 10_000): Promise<InitialWalletAPI> {
+  const interval = 200;
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const lace = window.midnight?.mnLace;
+    if (lace) return lace;
+    await new Promise((r) => setTimeout(r, interval));
+  }
+  throw new Error(
+    'Lace wallet not found after 10 seconds. ' +
+      'Please install the Lace extension and switch it to Preprod network.',
+  );
+}
+
+/* ── Provider ── */
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [enabledApi, setEnabledApi] = useState<EnabledWalletAPI | null>(null);
+  const [shieldedCoinPublicKey, setShieldedCoinPublicKey] = useState<string | null>(null);
+  const [shieldedEncryptionPublicKey, setShieldedEncryptionPublicKey] = useState<string | null>(null);
+  const [connectedApi, setConnectedApi] = useState<ConnectedWalletAPI | null>(null);
+  const [serviceConfig, setServiceConfig] = useState<ServiceConfig | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Re-check on mount in case the user previously approved the DApp
+  /* Try silent reconnect on mount if Lace is already approved */
   useEffect(() => {
     const lace = window.midnight?.mnLace;
     if (!lace) return;
-    lace.isEnabled().then((enabled) => {
-      if (enabled) {
-        // Auto-reconnect silently
-        lace.connect('preprod').then(async (api) => {
-          const state = await api.state();
-          setEnabledApi(api);
-          setWalletAddress(state.address);
-          setConnected(true);
-        }).catch(() => {/* silent — user may need to re-approve */});
+
+    (async () => {
+      try {
+        const api = await lace.connect('preprod');
+        const status = await api.getConnectionStatus();
+        if (status.status !== 'connected') return;
+
+        const [addrs, cfg] = await Promise.all([
+          api.getShieldedAddresses(),
+          api.getConfiguration(),
+        ]);
+
+        setConnectedApi(api);
+        setServiceConfig(cfg);
+        setWalletAddress(addrs.address);
+        setShieldedCoinPublicKey(addrs.coinPublicKey);
+        setShieldedEncryptionPublicKey(addrs.encryptionPublicKey);
+        setConnected(true);
+      } catch {
+        /* silent — user hasn't approved yet */
       }
-    }).catch(() => {/* wallet may not be injected yet */});
+    })();
   }, []);
 
   const connect = useCallback(async () => {
@@ -108,22 +139,33 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setConnecting(true);
 
     try {
-      const lace = window.midnight?.mnLace;
-      if (!lace) {
+      const lace = await waitForLace();
+      const api = await lace.connect('preprod');
+
+      const status = await api.getConnectionStatus();
+      if (status.status !== 'connected') {
+        throw new Error('Wallet connected but returned disconnected status. Please try again.');
+      }
+      if (status.networkId && status.networkId !== 'preprod') {
         throw new Error(
-          'Lace wallet not found. Install the Lace extension and set it to Preprod network.',
+          `Lace is connected to "${status.networkId}" network. ` +
+            'Please switch Lace to Preprod and try again.',
         );
       }
 
-      const api = await lace.connect('preprod');
-      const state = await api.state();
+      const [addrs, cfg] = await Promise.all([
+        api.getShieldedAddresses(),
+        api.getConfiguration(),
+      ]);
 
-      setEnabledApi(api);
-      setWalletAddress(state.address);
+      setConnectedApi(api);
+      setServiceConfig(cfg);
+      setWalletAddress(addrs.address);
+      setShieldedCoinPublicKey(addrs.coinPublicKey);
+      setShieldedEncryptionPublicKey(addrs.encryptionPublicKey);
       setConnected(true);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setConnecting(false);
     }
@@ -132,21 +174,36 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const disconnect = useCallback(() => {
     setConnected(false);
     setWalletAddress(null);
-    setEnabledApi(null);
+    setShieldedCoinPublicKey(null);
+    setShieldedEncryptionPublicKey(null);
+    setConnectedApi(null);
+    setServiceConfig(null);
     setError(null);
   }, []);
 
   const value = useMemo(
-    () => ({ connected, walletAddress, enabledApi, connecting, error, connect, disconnect }),
-    [connected, walletAddress, enabledApi, connecting, error, connect, disconnect],
+    () => ({
+      connected,
+      walletAddress,
+      shieldedCoinPublicKey,
+      shieldedEncryptionPublicKey,
+      connectedApi,
+      serviceConfig,
+      connecting,
+      error,
+      connect,
+      disconnect,
+    }),
+    [
+      connected, walletAddress, shieldedCoinPublicKey, shieldedEncryptionPublicKey,
+      connectedApi, serviceConfig, connecting, error, connect, disconnect,
+    ],
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
+/* ── Hook ── */
 
 export function useWallet(): WalletContextValue {
   const ctx = useContext(WalletContext);

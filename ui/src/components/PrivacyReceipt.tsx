@@ -1,10 +1,4 @@
-/**
- * PrivacyReceipt — documents what the ZK proof revealed and concealed.
- *
- * This is the "observable privacy behaviour" required by Level 2.
- * It makes the privacy claim explicit and auditable in the UI.
- */
-
+'use client';
 import React from 'react';
 import type { NegotiationStatus } from '@nocturn/api';
 
@@ -12,100 +6,94 @@ interface PrivacyReceiptProps {
   status: NegotiationStatus;
   agreedPrice: bigint;
   contractAddress: string;
-  buyerMaxWasSet: boolean;
-  sellerMinWasSet: boolean;
 }
 
-export function PrivacyReceipt({
-  status,
-  agreedPrice,
-  contractAddress,
-  buyerMaxWasSet,
-  sellerMinWasSet,
-}: PrivacyReceiptProps) {
+export function PrivacyReceipt({ status, agreedPrice, contractAddress }: PrivacyReceiptProps) {
+  const isMatched = status === 'Matched';
+
+  function truncate(s: string, n = 12) {
+    if (!s || s.length <= n * 2 + 3) return s;
+    return `${s.slice(0, n)}…${s.slice(-n)}`;
+  }
+
   return (
-    <div className="privacy-receipt animate-slide-up">
+    <div className={`receipt-card animate-slide-up ${isMatched ? 'receipt-matched' : 'receipt-failed'}`}
+      style={{
+        borderColor: isMatched
+          ? 'rgba(16,185,129,0.2)'
+          : 'rgba(239,68,68,0.2)',
+        background: isMatched
+          ? 'rgba(16,185,129,0.04)'
+          : 'rgba(239,68,68,0.04)',
+      }}
+    >
+      {/* Header */}
       <div className="receipt-header">
-        <span>🧾</span>
-        <span>ZK Privacy Receipt</span>
+        <span className="receipt-title">
+          {isMatched ? '✅ Privacy Receipt' : '❌ Negotiation Failed'}
+        </span>
+        <div className="receipt-proof-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          ZK Proved
+        </div>
       </div>
 
-      {/* Outcome */}
-      {status === 'Matched' && (
-        <div className="price-reveal animate-fade-in">
-          <p className="price-reveal__label">✅ Deal Agreed — Disclosed On-Chain</p>
-          <p className="price-reveal__value">{agreedPrice.toString()}</p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--status-matched)', opacity: 0.7 }}>
-            (seller's minimum — the agreed settlement price)
-          </p>
-        </div>
-      )}
-
-      {status === 'Failed' && (
-        <div className="failed-notice animate-fade-in">
-          <strong>No Deal.</strong>
-          <br />
-          The ZK proof confirmed <em>buyerMax &lt; sellerMin</em> without revealing either number.
-          <br />
-          The gap, the buyer's ceiling, and the seller's floor remain private.
-        </div>
-      )}
-
-      {/* Disclosure table */}
-      <div className="receipt-proof-line">
-        <strong>Proof statement:</strong> The circuit verified{' '}
-        <code>buyerMax {'≥'} sellerMin</code> is{' '}
-        <strong>{status === 'Matched' ? 'TRUE' : 'FALSE'}</strong>.
-        Neither value appeared in the transaction body or on the ledger.
-      </div>
-
+      {/* Rows */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         <div className="receipt-row">
-          <span className="receipt-key">Negotiation ID (contract)</span>
-          <span className="receipt-val-public" style={{ fontSize: '0.72rem', maxWidth: '60%', textAlign: 'right', wordBreak: 'break-all' }}>
-            {contractAddress.slice(0, 20)}…
+          <span className="receipt-row-label">Outcome</span>
+          <span
+            className="receipt-row-value"
+            style={{ color: isMatched ? 'var(--status-matched)' : 'var(--status-failed)', fontFamily: 'inherit', fontWeight: 600 }}
+          >
+            {status}
           </span>
         </div>
 
+        {isMatched && (
+          <div className="receipt-row">
+            <span className="receipt-row-label">Agreed Price</span>
+            <span className="receipt-row-value" style={{ color: 'var(--status-matched)' }}>
+              {agreedPrice.toString()}
+            </span>
+          </div>
+        )}
+
         <div className="receipt-row">
-          <span className="receipt-key">Outcome status</span>
-          <span className="receipt-val-public">{status} — public</span>
+          <span className="receipt-row-label">Buyer Max Revealed?</span>
+          <span className="receipt-row-value" style={{ color: 'var(--cyan-400)' }}>🔒 No — witness only</span>
         </div>
 
         <div className="receipt-row">
-          <span className="receipt-key">Agreed price</span>
-          {status === 'Matched' ? (
-            <span className="receipt-val-public">{agreedPrice.toString()} — public</span>
-          ) : (
-            <span className="receipt-val-private">not applicable — no deal</span>
-          )}
+          <span className="receipt-row-label">Seller Min Revealed?</span>
+          <span className="receipt-row-value" style={{ color: 'var(--cyan-400)' }}>🔒 No — witness only</span>
         </div>
 
         <div className="receipt-row">
-          <span className="receipt-key">Buyer's maximum price</span>
-          <span className="receipt-val-hidden">
-            {buyerMaxWasSet ? '🔒 ZK witness — never disclosed' : '—'}
+          <span className="receipt-row-label">Contract</span>
+          <span className="receipt-row-value" title={contractAddress}>
+            {truncate(contractAddress, 10)}
           </span>
         </div>
 
-        <div className="receipt-row">
-          <span className="receipt-key">Seller's minimum price</span>
-          <span className="receipt-val-hidden">
-            {sellerMinWasSet ? '🔒 ZK witness — never disclosed' : '—'}
-          </span>
-        </div>
-
-        <div className="receipt-row">
-          <span className="receipt-key">Gap between offers</span>
-          <span className="receipt-val-hidden">🔒 mathematically unreachable</span>
+        <div className="receipt-row" style={{ borderBottom: 'none' }}>
+          <span className="receipt-row-label">Network</span>
+          <span className="receipt-row-value">Midnight Preprod</span>
         </div>
       </div>
 
-      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Proof generated locally by your proof server at{' '}
-        <code style={{ fontSize: '0.72rem' }}>localhost:6300</code>.
-        Only the serialised SNARK was submitted — not the inputs.
-      </p>
+      {/* Privacy note */}
+      <div className="privacy-hint" style={{ marginTop: 4 }}>
+        <span className="privacy-hint-icon">🔍</span>
+        <span className="privacy-hint-text">
+          <strong>What the chain sees:</strong>{' '}
+          {isMatched
+            ? `Status = Matched, agreed price = ${agreedPrice.toString()}. Your ceiling and the seller's floor are permanently hidden.`
+            : 'Status = Failed. No price data was revealed. The gap between your limits is unknown to the chain.'}
+        </span>
+      </div>
     </div>
   );
 }

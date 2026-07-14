@@ -1,11 +1,13 @@
+'use client';
+
 /**
  * NegotiationContext — manages Midnight contract state.
  *
  * Handles:
- *   - deploy a fresh negotiation contract
+ *   - deploy a fresh negotiation contract on Preprod
  *   - join an existing contract by address
  *   - call openNegotiation() circuit
- *   - call matchOffer(buyerMax, sellerMin) circuit
+ *   - call matchOffer(buyerMax, sellerMin) circuit with ZK witnesses
  *   - subscribe to the contract's ledger state observable
  *
  * Privacy model:
@@ -27,11 +29,9 @@ import React, {
 } from 'react';
 import type { Subscription } from 'rxjs';
 import type { DeployedNocturnAPI, NegotiationState } from '@nocturn/api';
-import { PREPROD_CONFIG } from '@nocturn/api';
+import type { ConnectedWalletAPI, ServiceConfig } from './WalletContext';
 
-// ---------------------------------------------------------------------------
-// Context shape
-// ---------------------------------------------------------------------------
+/* ── Context shape ── */
 
 type TxPhase = 'idle' | 'proving' | 'submitting' | 'confirmed' | 'error';
 
@@ -41,7 +41,6 @@ interface NegotiationContextValue {
   txPhase: TxPhase;
   txError: string | null;
   deploying: boolean;
-
   deployFresh: () => Promise<void>;
   joinExisting: (address: string) => Promise<void>;
   openNegotiation: () => Promise<void>;
@@ -51,46 +50,135 @@ interface NegotiationContextValue {
 
 const NegotiationContext = createContext<NegotiationContextValue | null>(null);
 
-// ---------------------------------------------------------------------------
-// Helper: build lightweight providers from the enabled Lace wallet API
-// We adapt the wallet API to the shape expected by midnight-js-contracts.
-// ---------------------------------------------------------------------------
+/* ── Build providers from Lace ConnectedAPI ── */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildProviders(enabledApi: any) {
+async function buildMidnightProviders(
+  connectedApi: ConnectedWalletAPI,
+  serviceConfig: ServiceConfig,
+  coinPublicKey: string,
+  encryptionPublicKey: string,
+) {
+  // All imports are lazy (browser-only modules)
+  const [
+    { indexerPublicDataProvider },
+    { FetchZkConfigProvider },
+    { httpClientProofProvider },
+    { levelPrivateStateProvider },
+  ] = await Promise.all([
+    import('@midnight-ntwrk/midnight-js-indexer-public-data-provider'),
+    import('@midnight-ntwrk/midnight-js-fetch-zk-config-provider'),
+    import('@midnight-ntwrk/midnight-js-http-client-proof-provider'),
+    import('@midnight-ntwrk/midnight-js-level-private-state-provider'),
+  ]);
+
+  const indexerUri =
+    serviceConfig.indexerUri ||
+    'https://indexer.preprod.midnight.network/api/v4/graphql';
+  const indexerWsUri =
+    serviceConfig.indexerWsUri ||
+    'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
+  const proverServerUri =
+    serviceConfig.proverServerUri || 'http://127.0.0.1:6300';
+
+  /* 1. Public data provider — streams contract state */
+  const publicDataProvider = indexerPublicDataProvider(indexerUri, indexerWsUri);
+
+  /* 2. ZK config provider — fetches proving keys */
+  const zkConfigProvider = new FetchZkConfigProvider<string>(proverServerUri);
+
+  /* 3. Proof provider — generates ZK proofs */
+  const proofProvider = httpClientProofProvider(proverServerUri, zkConfigProvider);
+
+  /* 4. Private state provider — IndexedDB-backed, scoped per wallet */
+  const rawPwd = coinPublicKey.replace(/[^a-zA-Z0-9]/g, '').slice(0, 28);
+  const derivedPassword = rawPwd.length >= 16 ? rawPwd + 'Aa1!' : 'NocturnPrivacy1!Aa';
+
+  const privateStateProvider = levelPrivateStateProvider({
+    accountId: coinPublicKey,
+    privateStoragePasswordProvider: async () => derivedPassword,
+  });
+
+  /* 5. Wallet provider — bridges Lace to the SDK */
+  const walletProvider = {
+    coinPublicKey,
+    encryptionPublicKey,
+
+    /**
+     * balanceTx: receives the proven (unbound) transaction from the proof server,
+     * serializes it to hex, asks Lace to balance/fee it, returns the balanced tx.
+     */
+    balanceTx: async (unboundTx: unknown): Promise<unknown> => {
+      // Try multiple serialization strategies defensively
+      let serialized: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tx = unboundTx as any;
+
+      if (typeof tx === 'string') {
+        // Already a hex string
+        serialized = tx;
+      } else if (typeof tx?.to_hex === 'function') {
+        serialized = tx.to_hex();
+      } else if (typeof tx?.toHex === 'function') {
+        serialized = tx.toHex();
+      } else if (typeof tx?.serialize === 'function') {
+        const bytes: Uint8Array = tx.serialize();
+        serialized = Array.from(bytes)
+          .map((b) => (b as number).toString(16).padStart(2, '0'))
+          .join('');
+      } else if (tx?.transaction && typeof tx.transaction.serialize === 'function') {
+        const bytes: Uint8Array = tx.transaction.serialize();
+        serialized = Array.from(bytes)
+          .map((b) => (b as number).toString(16).padStart(2, '0'))
+          .join('');
+      } else {
+        throw new Error(
+          'Cannot serialize transaction: no known serialization method found. ' +
+            'Make sure the local proof server (Docker) is running: npm run proof:up',
+        );
+      }
+
+      const { tx: balanced } = await connectedApi.balanceUnsealedTransaction(serialized, {
+        payFees: true,
+      });
+      return balanced;
+    },
+  };
+
+  /* 6. Midnight provider — submits balanced tx via Lace */
+  const midnightProvider = {
+    submitTx: async (finalizedTx: unknown): Promise<string> => {
+      const txString = typeof finalizedTx === 'string' ? finalizedTx : String(finalizedTx);
+      await connectedApi.submitTransaction(txString);
+      return txString.slice(0, 64);
+    },
+  };
+
   return {
-    walletProvider: {
-      submitTx: enabledApi.submitTx.bind(enabledApi),
-      coinPublicKey: enabledApi.coinPublicKey,
-    },
-    publicDataProvider: {
-      // Indexer calls go to Preprod — these are resolved inside the contract layer
-      indexerUri: PREPROD_CONFIG.indexerUri,
-      indexerWsUri: PREPROD_CONFIG.indexerWsUri,
-    },
-    proofProvider: {
-      proofServerUrl: PREPROD_CONFIG.proofServerUrl,
-    },
-    zkConfigProvider: {
-      proofServerUrl: PREPROD_CONFIG.proofServerUrl,
-    },
-    midnightCoinPublicKey: enabledApi.coinPublicKey,
+    publicDataProvider,
+    privateStateProvider,
+    zkConfigProvider,
+    proofProvider,
+    walletProvider,
+    midnightProvider,
   };
 }
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
+/* ── Provider ── */
 
 interface NegotiationProviderProps {
   children: ReactNode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  enabledWalletApi: any | null;
+  connectedApi: ConnectedWalletAPI | null;
+  serviceConfig: ServiceConfig | null;
+  shieldedCoinPublicKey: string | null;
+  shieldedEncryptionPublicKey: string | null;
 }
 
 export function NegotiationProvider({
   children,
-  enabledWalletApi,
+  connectedApi,
+  serviceConfig,
+  shieldedCoinPublicKey,
+  shieldedEncryptionPublicKey,
 }: NegotiationProviderProps) {
   const [contractAddress, setContractAddress] = useState<string | null>(null);
   const [negotiationState, setNegotiationState] = useState<NegotiationState | null>(null);
@@ -101,7 +189,7 @@ export function NegotiationProvider({
   const apiRef = useRef<DeployedNocturnAPI | null>(null);
   const subscriptionRef = useRef<Subscription | null>(null);
 
-  // Subscribe to state$ observable when a contract is loaded
+  /* Attach contract and subscribe to state$ */
   const attachContract = useCallback((api: DeployedNocturnAPI) => {
     subscriptionRef.current?.unsubscribe();
     apiRef.current = api;
@@ -110,53 +198,67 @@ export function NegotiationProvider({
     subscriptionRef.current = api.state$.subscribe({
       next: (state) => setNegotiationState(state),
       error: (err) => {
-        console.error('[negotiation] state$ error:', err);
+        console.error('[nocturn] state$ error:', err);
         setTxError('State subscription error: ' + String(err));
       },
     });
   }, []);
 
+  /* Clean up subscription on unmount */
   useEffect(() => {
     return () => {
       subscriptionRef.current?.unsubscribe();
     };
   }, []);
 
+  /* Build providers (throws if wallet not ready) */
+  const getProviders = useCallback(async () => {
+    if (!connectedApi || !serviceConfig || !shieldedCoinPublicKey || !shieldedEncryptionPublicKey) {
+      throw new Error('Wallet not connected. Please connect your Lace wallet first.');
+    }
+    return buildMidnightProviders(
+      connectedApi,
+      serviceConfig,
+      shieldedCoinPublicKey,
+      shieldedEncryptionPublicKey,
+    );
+  }, [connectedApi, serviceConfig, shieldedCoinPublicKey, shieldedEncryptionPublicKey]);
+
+  /* Deploy a fresh contract */
   const deployFresh = useCallback(async () => {
-    if (!enabledWalletApi) return;
     setDeploying(true);
     setTxError(null);
     try {
+      const providers = await getProviders();
       const { deployNegotiation } = await import('@nocturn/api');
-      const providers = buildProviders(enabledWalletApi);
-      const api = await deployNegotiation(providers as Parameters<typeof deployNegotiation>[0]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = await deployNegotiation(providers as any);
       attachContract(api);
     } catch (err: unknown) {
       setTxError(err instanceof Error ? err.message : String(err));
     } finally {
       setDeploying(false);
     }
-  }, [enabledWalletApi, attachContract]);
+  }, [getProviders, attachContract]);
 
+  /* Join an existing contract */
   const joinExisting = useCallback(async (address: string) => {
-    if (!enabledWalletApi) return;
     setDeploying(true);
     setTxError(null);
     try {
+      const providers = await getProviders();
       const { joinNegotiation } = await import('@nocturn/api');
-      const providers = buildProviders(enabledWalletApi);
-      const api = await joinNegotiation(
-        providers as Parameters<typeof joinNegotiation>[0],
-        address,
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = await joinNegotiation(providers as any, address);
       attachContract(api);
     } catch (err: unknown) {
       setTxError(err instanceof Error ? err.message : String(err));
     } finally {
       setDeploying(false);
     }
-  }, [enabledWalletApi, attachContract]);
+  }, [getProviders, attachContract]);
 
+  /* Call openNegotiation circuit */
   const openNegotiation = useCallback(async () => {
     if (!apiRef.current) return;
     setTxPhase('proving');
@@ -171,14 +273,14 @@ export function NegotiationProvider({
     }
   }, []);
 
+  /* Call matchOffer circuit with private witnesses */
   const matchOffer = useCallback(async (buyerMax: bigint, sellerMin: bigint) => {
     if (!apiRef.current) return;
     setTxPhase('proving');
     setTxError(null);
     try {
-      // buyerMax and sellerMin are passed into the ZK witness here.
-      // After matchOffer() resolves, they are not stored anywhere.
       setTxPhase('submitting');
+      // buyerMax and sellerMin enter the ZK witness here — never stored
       await apiRef.current.matchOffer(buyerMax, sellerMin);
       setTxPhase('confirmed');
     } catch (err: unknown) {
@@ -218,9 +320,7 @@ export function NegotiationProvider({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
+/* ── Hook ── */
 
 export function useNegotiation(): NegotiationContextValue {
   const ctx = useContext(NegotiationContext);

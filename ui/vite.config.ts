@@ -1,49 +1,19 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
+import wasm from 'vite-plugin-wasm';
 
 export default defineConfig({
   plugins: [
-    react(),
     wasm(),
     topLevelAwait(),
-    // Required for midnight-js and its crypto dependencies in the browser
-    nodePolyfills({
-      include: ['buffer', 'crypto', 'stream', 'util'],
-      globals: {
-        Buffer: true,
-        global: true,
-        process: true,
-      },
-    }),
+    react()
   ],
-  resolve: {
-    alias: {
-      // Ensure a single Buffer instance across all dependencies
-      buffer: 'buffer/',
-    },
-  },
-  optimizeDeps: {
-    include: ['buffer'],
+  server: {
+    port: 3000
   },
   build: {
-    target: 'ES2022',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'midnight-js': [
-            '@midnight-ntwrk/dapp-connector-api',
-          ],
-          react: ['react', 'react-dom'],
-        },
-      },
-    },
-  },
-  server: {
-    port: 5173,
-    // Allow the UI to talk to the local proof server
-    cors: true,
-  },
+    outDir: 'dist',
+    target: 'esnext'
+  }
 });

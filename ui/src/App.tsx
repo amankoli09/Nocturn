@@ -1,73 +1,104 @@
-import React, { useState } from 'react';
-import { WalletProvider, useWallet } from './context/WalletContext';
+import React from 'react';
+import { useWallet } from './context/WalletContext';
 import { NegotiationProvider } from './context/NegotiationContext';
 import { ConnectWallet } from './components/ConnectWallet';
 import { NegotiationPanel } from './components/NegotiationPanel';
 
-function AppInner() {
-  const { connected, enabledApi } = useWallet();
-
-  if (connected) {
-    return (
-      <NegotiationProvider enabledWalletApi={enabledApi}>
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-          <NegotiationPanel />
-        </div>
-      </NegotiationProvider>
-    );
-  }
-
-  return <ConnectWallet onConnect={() => {}} />;
+/* ── Wallet pill shown in the header when connected ── */
+function truncate(s: string, n = 8) {
+  if (!s || s.length <= n * 2 + 3) return s;
+  return `${s.slice(0, n)}...${s.slice(-n)}`;
 }
 
 function Header() {
-  const { connected, disconnect } = useWallet();
-
+  const { connected, walletAddress, disconnect } = useWallet();
   return (
     <header className="app-header">
       <div className="app-header-logo">
-        <strong style={{ fontSize: '1.25rem', letterSpacing: '-0.5px' }}>Nocturn.</strong>
+        <span className="logo-moon">🌒</span>
+        <strong>Nocturn</strong>
       </div>
+
       <nav className="app-header-nav">
         <a href="#">Home</a>
-        <a href="#">Services</a>
-        <a href="#">About Us</a>
-        <a href="#">Pricing</a>
+        <a href="#privacy">Privacy</a>
+        <a href="https://github.com/amankoli09/Nocturn" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
       </nav>
+
       <div className="app-header-action">
         {connected ? (
-          <button className="header-btn" onClick={disconnect}>Disconnect Wallet</button>
+          <>
+            <div className="wallet-pill">
+              <span className="wallet-dot-live" />
+              <span className="font-mono text-xs">{truncate(walletAddress ?? '', 7)}</span>
+            </div>
+            <button className="header-btn header-btn-ghost" onClick={disconnect}>
+              Disconnect
+            </button>
+          </>
         ) : (
-          <button className="header-btn">Book a Demo</button>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            Midnight Preprod
+          </span>
         )}
       </div>
     </header>
   );
 }
 
-export default function App() {
-  return (
-    <div className="app-root">
-      <WalletProvider>
-        <div className="app-container">
-          <Header />
-          
-          <main className="app-main">
-            <AppInner />
-          </main>
+/* ── Main content — switches between landing and panel ── */
+function AppContent() {
+  const {
+    connected,
+    connectedApi,
+    serviceConfig,
+    shieldedCoinPublicKey,
+    shieldedEncryptionPublicKey,
+  } = useWallet();
 
-          <footer className="app-footer">
-            <div className="footer-title">Trust the Experts</div>
-            <div className="footer-links">
-              <span>Midnight Preprod</span>
-              <span>Nocturn · Level 2</span>
-              <a href="https://github.com/amankoli09/Nocturn" target="_blank" rel="noopener noreferrer">
-                GitHub ↗
-              </a>
-            </div>
-          </footer>
+  if (connected) {
+    return (
+      <NegotiationProvider
+        connectedApi={connectedApi}
+        serviceConfig={serviceConfig}
+        shieldedCoinPublicKey={shieldedCoinPublicKey}
+        shieldedEncryptionPublicKey={shieldedEncryptionPublicKey}
+      >
+        <div className="app-main animate-fade-in">
+          <NegotiationPanel />
         </div>
-      </WalletProvider>
+      </NegotiationProvider>
+    );
+  }
+
+  return (
+    <main className="app-main">
+      <ConnectWallet />
+    </main>
+  );
+}
+
+export function App() {
+  return (
+    <div className="app-container">
+      <Header />
+      <AppContent />
+      <footer className="app-footer">
+        <div className="footer-brand">🌒 Nocturn · Level 2</div>
+        <div className="footer-links">
+          <span>Midnight Preprod</span>
+          <span>Zero-Knowledge Negotiation</span>
+          <a
+            href="https://github.com/amankoli09/Nocturn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub ↗
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

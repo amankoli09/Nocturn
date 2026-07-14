@@ -15,7 +15,7 @@ import {
   findDeployedContract,
 } from '@midnight-ntwrk/midnight-js-contracts';
 import type { ContractAddress } from '@midnight-ntwrk/midnight-js-protocol/compact-runtime';
-import { combineLatest, map, type Observable } from 'rxjs';
+import { map, type Observable } from 'rxjs';
 import { createWitnesses, createStubWitnesses, type NegotiationWitnesses } from './witnesses.js';
 import {
   decodeStatus,
@@ -57,54 +57,82 @@ async function loadContract() {
 
 // ---------------------------------------------------------------------------
 // Internal: build the observable state from the contract's public ledger state
+//
+// The deployed contract from midnight-js-contracts exposes:
+//   deployed.callTx.openNegotiation()   — call a circuit
+//   deployed.callTx.matchOffer()        — call a circuit
+//   deployed.deployTxData.public.contractAddress — the address
+//
+// To watch contract state changes we subscribe to the publicDataProvider's
+// watchForContractState() stream, which emits every time the indexer sees
+// the contract state update. We then decode the state using the Compact-
+// generated `ledger()` function.
 // ---------------------------------------------------------------------------
 
 function buildState$(
   contractAddress: ContractAddress,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contractInstance: any,
+  providers: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ledgerFn: (state: any) => { negotiationStatus: bigint; agreedPrice: bigint },
 ): Observable<NegotiationState> {
-  return combineLatest([
-    contractInstance.negotiationStatus$,
-    contractInstance.agreedPrice$,
-  ]).pipe(
-    map(([{ status, agreedPrice }]) => ({
-      status: decodeStatus(status),
-      agreedPrice,
-      contractAddress: contractInstance.deployedContractAddress,
-    })),
-  );
+  // contractStateObservable streams every ContractState update from the indexer.
+  // We use { type: 'latest' } so we immediately get the current state and then
+  // receive updates whenever it changes.
+  return providers.publicDataProvider
+    .contractStateObservable(contractAddress, { type: 'latest' })
+    .pipe(
+      map((contractState: unknown) => {
+        try {
+          const decoded = ledgerFn(contractState);
+          return {
+            status: decodeStatus(decoded.negotiationStatus),
+            agreedPrice: decoded.agreedPrice,
+            contractAddress,
+          } satisfies NegotiationState;
+        } catch {
+          // Contract state not yet set (e.g. right after deploy before openNegotiation)
+          return {
+            status: decodeStatus(0n),
+            agreedPrice: 0n,
+            contractAddress,
+          } satisfies NegotiationState;
+        }
+      }),
+    );
 }
 
 // ---------------------------------------------------------------------------
-// Internal: wrap a deployed contract instance into the DeployedNocturnAPI
+// Internal: wrap a deployed FoundContract into the DeployedNocturnAPI
 // ---------------------------------------------------------------------------
 
 function wrapContract(
   contractAddress: ContractAddress,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contractInstance: any,
+  foundContract: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   providers: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ledgerFn: (state: any) => { negotiationStatus: bigint; agreedPrice: bigint },
 ): DeployedNocturnAPI {
-  const state$ = buildState$(contractAddress, contractInstance);
+  const state$ = buildState$(contractAddress, providers, ledgerFn);
 
   return {
     contractAddress,
     state$,
 
     async openNegotiation() {
-      const witnesses = createStubWitnesses();
-      const tx = await contractInstance.callTx.openNegotiation(witnesses);
-      await providers.walletProvider.submitTx(tx);
+      // callTx.openNegotiation() handles: build tx → ZK prove → balance → submit → confirm
+      await foundContract.callTx.openNegotiation();
     },
 
     async matchOffer(buyerMax: bigint, sellerMin: bigint) {
-      // Witnesses are created here — they exist only for this call's lifetime.
+      // Witnesses are set on the contract instance for this call only.
       // buyerMax and sellerMin NEVER appear in the submitted transaction body.
-      const witnesses = createWitnesses(buyerMax, sellerMin);
-      const tx = await contractInstance.callTx.matchOffer(witnesses);
-      await providers.walletProvider.submitTx(tx);
+      foundContract.witnesses = createWitnesses(buyerMax, sellerMin);
+      await foundContract.callTx.matchOffer();
+      // Reset to stub witnesses immediately after (don't leave private values around)
+      foundContract.witnesses = createStubWitnesses();
     },
   };
 }
@@ -126,19 +154,21 @@ export async function deployNegotiation(
     throw new Error('Contract artifacts not found. Run: bash scripts/compile.sh');
   }
 
-  const { Contract, witnesses: defaultWitnesses } = contractMod;
+  const { Contract, ledger } = contractMod;
 
-  // @ts-ignore
+  // Deploy with stub witnesses — the contract constructor doesn't invoke witnesses
   const deployed = await deployContract(providers, {
-    contract: new Contract(defaultWitnesses ?? createStubWitnesses()),
-    privateStateKey: 'nocturn-negotiation',
-    initialPrivateState: {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    compiledContract: new Contract(createStubWitnesses()) as any,
+    privateStateId: 'nocturn-negotiation',
+    initialPrivateState: {} as never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   const address = deployed.deployTxData.public.contractAddress;
   console.log(`[nocturn] Deployed contract address: ${address}`);
 
-  return wrapContract(address, deployed, providers);
+  return wrapContract(address, deployed, providers, ledger);
 }
 
 /**
@@ -154,17 +184,18 @@ export async function joinNegotiation(
     throw new Error('Contract artifacts not found. Run: bash scripts/compile.sh');
   }
 
-  const { Contract } = contractMod;
+  const { Contract, ledger } = contractMod;
 
-  // @ts-ignore
   const found = await findDeployedContract(providers, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    compiledContract: new Contract(createStubWitnesses()) as any,
     contractAddress,
-    contract: new Contract(createStubWitnesses()),
-    privateStateKey: 'nocturn-negotiation',
-    initialPrivateState: {},
+    privateStateId: 'nocturn-negotiation',
+    initialPrivateState: {} as never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
-  return wrapContract(contractAddress, found, providers);
+  return wrapContract(contractAddress, found, providers, ledger);
 }
 
 export * from './types.js';

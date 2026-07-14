@@ -4,21 +4,22 @@ node_modules/
 .env.*
 .compact/
 coverage/
-dist/
 *.log
 
 # Proof server volumes
 proof-server-data/
 
-# UI build output
-ui/dist/
+# UI build output — static export goes to ui/out (committed for Vercel)
+ui/.next/
 
-# API build output
+# API compiled output — rebuilt on Vercel via npm run build --workspace=api
+# NOTE: We DO commit api/dist in CI so Vercel doesn't need to rebuild
+# (remove the line below if you want to rebuild on Vercel)
 api/dist/
 
 # Wallet seed — NEVER commit this
 *.seed
 WALLET_SEED
 
-# Docs — preprod address is committed, not the deploy log
+# Docs
 docs/deploy.log
