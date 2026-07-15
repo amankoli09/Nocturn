@@ -14,7 +14,7 @@
     "deploy": "tsx scripts/deploy.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p api/tsconfig.json --noEmit && tsc -p ui/tsconfig.json --noEmit",
     "dev": "npm run dev --workspace=ui",
-    "build": "npm run build --workspace=api && npm run build --workspace=ui",
+    "build": "npm run build --workspace=@nocturn/api && npm run build --workspace=@nocturn/ui",
     "proof:up": "docker compose -f docker-compose.yml up -d",
     "proof:down": "docker compose -f docker-compose.yml down"
   },
