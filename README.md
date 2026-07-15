@@ -13,7 +13,7 @@
 
 ## What This Does
 
-Nocturn is a private negotiation protocol built on the Midnight blockchain. It enables two parties to cryptographically prove whether a buyer's maximum price and a seller's minimum price overlap — **without revealing either number** to the chain, the platform, or each other.
+Nocturn is a private negotiation protocol built on the Midnight blockchain. It enables two parties to cryptographically prove whether a buyer's maximum price and a seller's minimum price overlap— **without revealing either number** to the chain, the platform, or each other.
 
 A buyer enters their ceiling price. A seller enters their floor price. The Compact ZK circuit proves `buyerMax >= sellerMin` without disclosing either value. The ledger only records the boolean outcome (Matched / Failed) and — only if Matched — the agreed settlement price.
 
