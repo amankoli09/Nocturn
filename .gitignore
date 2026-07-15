@@ -5,6 +5,7 @@ node_modules/
 .compact/
 coverage/
 *.log
+*.tsbuildinfo
 
 # Proof server volumes
 proof-server-data/
