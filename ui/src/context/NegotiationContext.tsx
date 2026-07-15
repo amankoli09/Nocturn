@@ -196,8 +196,8 @@ export function NegotiationProvider({
     setContractAddress(api.contractAddress);
 
     subscriptionRef.current = api.state$.subscribe({
-      next: (state) => setNegotiationState(state),
-      error: (err) => {
+      next: (state: unknown) => setNegotiationState(state as Parameters<typeof setNegotiationState>[0]),
+      error: (err: unknown) => {
         console.error('[nocturn] state$ error:', err);
         setTxError('State subscription error: ' + String(err));
       },

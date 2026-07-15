@@ -10,13 +10,12 @@ coverage/
 # Proof server volumes
 proof-server-data/
 
-# UI build output — static export goes to ui/out (committed for Vercel)
+# UI build output
 ui/.next/
+ui/dist/
 
-# API compiled output — rebuilt on Vercel via npm run build --workspace=api
-# NOTE: We DO commit api/dist in CI so Vercel doesn't need to rebuild
-# (remove the line below if you want to rebuild on Vercel)
-api/dist/
+# API compiled output is COMMITTED so Vercel can resolve @nocturn/api types
+# api/dist/ is intentionally NOT ignored
 
 # Wallet seed — NEVER commit this
 *.seed
