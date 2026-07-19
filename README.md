@@ -3,7 +3,7 @@
 > Privacy-Preserving Over-the-Counter Trading on Midnight.
 
 ## Live Demo
-🚀 **[View on Vercel](https://nocturn.vercel.app)**
+🚀 **[View on Vercel](https://nocturn-q8a5.vercel.app/)**
 *(Note: If Vercel assigns a different URL during deployment, update this link!)*
 
 ## Contract Address
