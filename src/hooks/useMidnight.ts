@@ -61,7 +61,7 @@ export function useMidnight() {
 
   // Mock implementation for the UI demo since we don't have the contract deployed in this browser context yet
   // In a real app, this would use @midnight-ntwrk/midnight-js-contracts
-  const callMatchOffer = useCallback(async (role: 'buyer' | 'seller', price: number) => {
+  const callMatchOffer = useCallback(async (_role: 'buyer' | 'seller', price: number) => {
     setError('');
     
     // Simulate ZK proof generation and network delay

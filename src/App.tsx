@@ -1,4 +1,3 @@
-import React from 'react';
 import { WalletConnect } from './components/WalletConnect';
 import { CircuitCall } from './components/CircuitCall';
 import { useMidnight } from './hooks/useMidnight';
