@@ -2,7 +2,7 @@
   "version": 3,
   "file": "index.js",
   "sourceRoot": "../../../",
-  "sources": ["contract/negotiation.compact"],
+  "sources": ["contracts/negotiation.compact"],
   "names": [],
   "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAMA;;;;;;;;;;;;;;;;MAKA,AAAA,eAGC;;;;;;;;;;;;;;;;;;;;;;OAAA;MAED,AAAA,UAWC;;;;;;;;;;;;;;;;;;;;;;OAAA;;;;;;;;;;GAlBA;EAHD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IANA;;;;;;;;;yEAAyC;IACzC;;;;;;;;;yEAAoC;UAMhC,KAAiB;IAAjB;;;;;;;2HAAA,KAAiB;;yEAAA;UACjB,KAAW;IAAX;;;;;;;2HAAA,KAAW;;yEAAA;;;;;;;GACd;EAND,AAAA,gBAAkC;;0DAAlC,aAAkC;;;;;;;;;;;;;;GAAA;EAClC,AAAA,iBAAmC;;0DAAnC,cAAmC;;;;;;;;;;;;;;GAAA;EAOnC,AAAA,kBAGC;UAFG,KAAiB;IAAjB;;;;;;;2HAAA,KAAiB;;yEAAA;UACjB,KAAW;IAAX;;;;;;;2HAAA,KAAW;;yEAAA;;GACd;EAED,AAAA,aAWC;UAVS,UAAoC;UACpC,WAAsC;QAExC,UAAQ,IAAI,WAAS;MACrB;;;;;;;6HAAc,WAAS;;2EAAZ;YACX,KAAiB;MAAjB;;;;;;;6HAAA,KAAiB;;2EAAA;;YAEjB,KAAW;MAAX;;;;;;;6HAAA,KAAW;;2EAAA;YACX,KAAiB;MAAjB;;;;;;;6HAAA,KAAiB;;2EAAA;;;GAExB;;;;;;;;;;;;;;;;IA3BD;qCAAA;;;;;;;;;;;0GAAyC;KAAA;IACzC;qCAAA;;;;;;;;;;;0GAAoC;KAAA;;;;;;;;;;;;"
 }

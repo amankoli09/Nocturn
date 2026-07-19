@@ -1,114 +1,45 @@
 # Nocturn
-> Confidential price negotiation on the Midnight blockchain.
+
+> Privacy-Preserving Over-the-Counter Trading on Midnight.
 
 ## Live Demo
-<!-- PASTE LIVE URL HERE AFTER DEPLOYING TO VERCEL -->
-[https://nocturn.vercel.app](https://nocturn.vercel.app)
+🚀 **[View on Vercel](https://nocturn.vercel.app)**
+*(Note: If Vercel assigns a different URL during deployment, update this link!)*
 
 ## Contract Address
-
-| Network | Address |
-|---------|---------|
-| Preprod | *Deploy via the UI and paste address here* |
+| Network  | Address                          |
+|----------|----------------------------------|
+| Preprod  | [CONTRACT ADDRESS FROM LEVEL 1]  |
 
 ## What This Does
+Nocturn allows a buyer and a seller to negotiate an asset price on-chain without revealing their limits to the public or to each other. The buyer sets a maximum price, and the seller sets a minimum price. The smart contract utilizes a Zero-Knowledge circuit to mathematically prove whether the buyer's maximum is greater than or equal to the seller's minimum, automatically settling the trade if they overlap.
 
-Nocturn is a private negotiation protocol built on the Midnight blockchain. It enables two parties to cryptographically prove whether a buyer's maximum price and a seller's minimum price overlap— **without revealing either number** to the chain, the platform, or each other.
-
-A buyer enters their ceiling price. A seller enters their floor price. The Compact ZK circuit proves `buyerMax >= sellerMin` without disclosing either value. The ledger only records the boolean outcome (Matched / Failed) and — only if Matched — the agreed settlement price.
+## Privacy Model
+- **What is PUBLIC:** The negotiation status (Open, Matched, No Deal) and the final agreed price (only if a match occurs).
+- **What is PRIVATE:** The buyer's maximum price and the seller's minimum price.
+- **What the user PROVES without revealing:** They prove that their hidden price satisfies the overlap condition (`buyerMax >= sellerMin`) without ever exposing the actual numerical value of their limits.
 
 ## Privacy Claim
-
-**What is PUBLIC on-chain:**
-- The contract address on Midnight Preprod
-- The negotiation status: `Pending`, `Matched`, or `Failed`
-- The agreed settlement price (only if Matched — this is `sellerMin`)
-
-**What is PRIVATE (ZK witnesses, never on-chain):**
-- The buyer's absolute maximum ceiling price
-- The seller's absolute minimum floor price
-- The gap between them (if the negotiation fails)
-
-**What is PROVED without revealing:**
-> "I possess a `buyerMax` and `sellerMin` such that `buyerMax >= sellerMin`."
-
-The witness values live only in the browser's memory for the duration of the proof generation. After `matchOffer()` resolves, they are discarded. An on-chain observer sees only the status and — at most — the agreed price; they cannot determine either party's private limit.
+An on-chain observer can see when a negotiation starts and whether it resulted in a match or not. If a match occurs, the observer sees the final agreed settlement price. The observer **cannot see** what the buyer was actually willing to pay or what the seller was actually willing to accept, ensuring optimal trading execution without leaking market intelligence.
 
 ## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Contract | Compact language (Midnight) |
-| Contract runtime | `@midnight-ntwrk/compact-runtime` |
-| SDK | Midnight.js SDK v4.1.1 |
-| DApp connector | Lace Wallet DApp Connector API v4 |
-| Frontend | Next.js 14 (App Router, static export) |
-| Styling | Vanilla CSS (glassmorphism) |
-| Deployment | Vercel (static export) |
-| Network | Midnight Preprod |
-
-## Architecture
-
-```
-contract/negotiation.compact      ← Compact source
-managed/negotiation/contract/     ← Compiled artifacts (committed)
-api/src/
-  ├── index.ts    ← deployNegotiation / joinNegotiation
-  ├── types.ts    ← NegotiationState, NocturnConfig
-  └── witnesses.ts← ZK witness callbacks (private values)
-ui/src/
-  ├── context/WalletContext.tsx   ← Lace DApp Connector
-  ├── context/NegotiationContext.tsx ← SDK provider wiring
-  └── components/ ← ConnectWallet, NegotiationPanel, PrivacyReceipt
-```
+Midnight network, Compact, Midnight.js SDK, React/Vite, Lace wallet
 
 ## Prerequisites
-
-- [Lace wallet](https://www.lace.io/) installed and set to **Preprod** network
-- Node.js v22 (`nvm use`)
-- Docker Desktop (for local ZK proof server)
+- Lace wallet installed (Midnight edition)
+- Node.js v22
 
 ## Run Locally
-
-```bash
-# 1. Clone
-git clone https://github.com/amankoli09/Nocturn.git
-cd Nocturn
-
-# 2. Install dependencies
-npm install
-
-# 3. Build the API
-npm run build --workspace=api
-
-# 4. Start the local ZK proof server (Docker required)
-npm run proof:up
-
-# 5. Run the frontend dev server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in a browser with the Lace extension installed.
-
-## Deploy to Vercel
-
-```bash
-# Build static output locally first (optional)
-npm run build
-
-# Then push to GitHub and connect the repo to Vercel.
-# Vercel will automatically run the build command from vercel.json.
-```
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the local development server:
+   ```bash
+   npm run dev
+   ```
+4. Open the local URL in a browser with the Lace extension installed.
 
 ## Demo Video
-<!-- Add link after recording -->
-[Demo video link — wallet connect + circuit call]
-
-## Commits
-
-This repository has 8+ meaningful commits documenting the Level 1 and Level 2 progress.
-
----
-
-*Nocturn — Level 2 Waxing Crescent Submission*  
-*New Moon to Full: $8,000 Prize Pool — Midnight Blockchain*
+[PLACEHOLDER]

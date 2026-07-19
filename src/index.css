@@ -1,0 +1,280 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #12131c;
+  --bg-card: #1a1b26;
+  --bg-card-hover: #1e1f2b;
+  --text-primary: #f0f0f5;
+  --text-secondary: #8e95b3;
+  --accent: #6c78e3;
+  --accent-light: #8993f0;
+  --accent-dark: #4b55b3;
+  --success: #2dd4bf;
+  --danger: #fb7185;
+  
+  /* Claymorphism Shadows */
+  --clay-outer: 8px 10px 24px rgba(0, 0, 0, 0.4), -4px -4px 14px rgba(255, 255, 255, 0.03);
+  --clay-inner: inset -6px -6px 12px rgba(0, 0, 0, 0.5), inset 4px 4px 12px rgba(255, 255, 255, 0.06);
+  --clay-btn-outer: 4px 6px 14px rgba(0, 0, 0, 0.3), -2px -2px 8px rgba(255, 255, 255, 0.04);
+  --clay-btn-inner: inset -3px -3px 8px rgba(0, 0, 0, 0.4), inset 2px 2px 8px rgba(255, 255, 255, 0.1);
+  --clay-btn-active: inset 4px 4px 10px rgba(0, 0, 0, 0.6), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(108, 120, 227, 0.12), transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(45, 212, 191, 0.08), transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(26, 27, 38, 1), transparent 100%);
+  background-attachment: fixed;
+}
+
+#root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  width: 100%;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4rem;
+  background: var(--bg-card);
+  padding: 1.5rem 2.5rem;
+  border-radius: 32px;
+  box-shadow: var(--clay-outer), var(--clay-inner);
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 36px;
+  padding: 3rem;
+  box-shadow: var(--clay-outer), var(--clay-inner);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 20px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: var(--clay-btn-outer), var(--clay-btn-inner);
+  letter-spacing: 0.02em;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--accent-light);
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: var(--clay-btn-active);
+}
+
+.btn:disabled {
+  background: #2a2c3d;
+  color: #6a6f8f;
+  cursor: not-allowed;
+  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.3);
+}
+
+.btn-outline {
+  background: #232536;
+  color: var(--text-primary);
+  box-shadow: var(--clay-btn-outer), inset -2px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 6px rgba(255,255,255,0.03);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #2a2c3f;
+}
+
+.wallet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #15161f;
+  padding: 0.75rem 1.25rem;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-family: monospace;
+  box-shadow: inset 3px 3px 8px rgba(0,0,0,0.5), inset -2px -2px 6px rgba(255,255,255,0.03);
+  color: var(--accent-light);
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+}
+
+@media (min-width: 850px) {
+  .main-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.input-group {
+  margin-bottom: 2rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+input[type="number"] {
+  width: 100%;
+  background: #15161f;
+  border: none;
+  color: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  box-shadow: inset 4px 4px 10px rgba(0,0,0,0.4), inset -2px -2px 6px rgba(255,255,255,0.03);
+  transition: all 0.3s ease;
+}
+
+input[type="number"]:focus {
+  outline: none;
+  box-shadow: inset 4px 4px 10px rgba(0,0,0,0.6), inset -2px -2px 6px rgba(255,255,255,0.03), 0 0 0 2px var(--accent);
+}
+
+input[type="number"]::placeholder {
+  color: #4a4d6a;
+}
+
+.status-panel {
+  margin-top: 2.5rem;
+  padding: 2rem;
+  border-radius: 24px;
+  background: #181924;
+  box-shadow: inset 4px 4px 12px rgba(0,0,0,0.4), inset -2px -2px 8px rgba(255,255,255,0.03);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--clay-btn-outer);
+}
+
+.status-badge.neutral { background: #232536; color: var(--text-secondary); }
+.status-badge.success { background: #132e26; color: var(--success); }
+.status-badge.danger { background: #351a20; color: var(--danger); }
+
+.privacy-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--success);
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #132e26;
+  border-radius: 20px;
+  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.3);
+}
+
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.role-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.role-btn {
+  flex: 1;
+  padding: 1rem;
+  background: #181924;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 1rem;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.3), -2px -2px 6px rgba(255,255,255,0.03);
+}
+
+.role-btn:hover {
+  background: #1c1d29;
+  color: white;
+}
+
+.role-btn.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: var(--clay-btn-inner);
+}

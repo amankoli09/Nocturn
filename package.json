@@ -3,30 +3,19 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "api",
-    "ui"
-  ],
   "scripts": {
     "compile": "bash scripts/compile.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "deploy": "tsx scripts/deploy.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p api/tsconfig.json --noEmit && tsc -p ui/tsconfig.json --noEmit",
-    "dev": "npm run dev --workspace=ui",
-    "build": "npm run build --workspace=@nocturn/api && npm run build --workspace=@nocturn/ui",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "proof:up": "docker compose -f docker-compose.yml up -d",
     "proof:down": "docker compose -f docker-compose.yml down"
   },
-  "devDependencies": {
-    "@types/node": "^22.15.30",
-    "tsx": "^4.20.5",
-    "typescript": "^5.8.3",
-    "vite-plugin-top-level-await": "^1.6.0",
-    "vite-plugin-wasm": "^3.6.0",
-    "vitest": "^3.2.4"
-  },
   "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
     "@midnight-ntwrk/dapp-connector-api": "4.0.1",
     "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
     "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
@@ -35,11 +24,24 @@
     "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
     "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
     "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
-    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
     "@midnight-ntwrk/midnight-js-types": "4.1.1",
     "@midnight-ntwrk/midnight-js-utils": "4.1.1",
     "@midnight-ntwrk/testkit-js": "4.1.1",
     "@midnight-ntwrk/wallet-sdk": "1.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.6.0",
+    "vitest": "^3.2.4"
   }
 }

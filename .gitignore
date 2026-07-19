@@ -4,18 +4,12 @@ node_modules/
 .env.*
 .compact/
 coverage/
+dist/
 *.log
 *.tsbuildinfo
 
 # Proof server volumes
 proof-server-data/
-
-# UI build output
-ui/.next/
-ui/dist/
-
-# API compiled output is COMMITTED so Vercel can resolve @nocturn/api types
-# api/dist/ is intentionally NOT ignored
 
 # Wallet seed — NEVER commit this
 *.seed

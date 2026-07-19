@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-compact compile contract/negotiation.compact managed/negotiation
+compact compile contracts/negotiation.compact managed/negotiation
